@@ -8,9 +8,6 @@
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap" rel="stylesheet">
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-
 <!-- CSS -->
 <style>
   body, html {
@@ -20,6 +17,7 @@
     overflow: hidden;
     background: #0f111a;
     color: #fff;
+    transition: background 1s;
   }
 
   #particles-js {
@@ -27,6 +25,8 @@
     width: 100%;
     height: 100%;
     z-index: -1;
+    opacity: 1;
+    transition: opacity 1.2s ease-in-out;
   }
 
   .form-container {
@@ -41,7 +41,13 @@
     box-shadow: 0 0 30px #00ffff88, 0 0 60px #00ffff33;
     text-align: center;
     color: #fff;
+    transition: all 0.4s ease, opacity 1s ease;
     z-index: 10;
+    opacity: 1;
+  }
+
+  .form-container:hover {
+    box-shadow: 0 0 50px #00ffffaa, 0 0 80px #00ffff55;
   }
 
   .form-container h1 {
@@ -70,6 +76,7 @@
     color: #fff;
     outline: none;
     font-size: 16px;
+    transition: 0.3s;
   }
 
   .input-group label {
@@ -102,32 +109,31 @@
     font-weight: bold;
     font-size: 16px;
     cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .form-container button:hover {
+    background: #00bfff;
+    box-shadow: 0 0 15px #00ffff;
   }
 
   .form-container a {
     display: block;
     margin-top: 12px;
     color: #00ffff;
+    text-decoration: none;
+    font-size: 14px;
     cursor: pointer;
   }
 
-  .dashboard-iframe {
-    display: none;
-    width: 100%;
-    height: 100vh;
-    border: none;
-    opacity: 0;
-    animation: fadeIn 1.2s forwards;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.98);}
-    to { opacity: 1; transform: scale(1);}
+  .form-container a:hover {
+    text-decoration: underline;
   }
 </style>
 </head>
 
 <body>
+<!-- Particle Background -->
 <div id="particles-js"></div>
 
 <!-- Login Form -->
@@ -136,8 +142,8 @@
     <h1>Viducate</h1>
 
     <div class="input-group">
-        <input type="email" id="username" placeholder=" " required>
-        <label>Email</label>
+        <input type="text" id="username" placeholder=" " required>
+        <label>Email ID</label>
     </div>
 
     <div class="input-group">
@@ -173,88 +179,71 @@
     <a onclick="showLogin()">Back to Login</a>
 </div>
 
-<!-- Dashboard iframe -->
-<iframe id="dashboard-frame" class="dashboard-iframe" src="http://127.0.0.1:7860"></iframe>
-
+<!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-<script>
-  /* Particles */
-  particlesJS("particles-js", {
-    "particles": {
-      "number": { "value": 80 },
-      "color": { "value": "#00ffff" },
-      "shape": { "type": "circle" },
-      "opacity": { "value": 0.5 },
-      "size": { "value": 3 },
-      "line_linked": { "enable": true, "distance": 120, "color": "#00ffff", "opacity": 0.4, "width": 1 },
-      "move": { "enable": true, "speed": 2 }
-    }
-  });
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+    from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-  /* Supabase Init */
-  const SUPABASE_URL = "https://sdmfuseodyvfgolbnmym.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkbWZ1c2VvZHl2ZmdvbGJubXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3MjQ2NzAsImV4cCI6MjA3NDMwMDY3MH0.xd5bLsVTw9sXr8x7Z5fm334ohQ2uRd9OI6rdTvC--ek";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJdKZOwLdZZFYQGgcFqgG_AF205SZgH2c",
+    authDomain: "viducate-52a38.firebaseapp.com",
+    projectId: "viducate-52a38",
+    storageBucket: "viducate-52a38.firebasestorage.app",
+    messagingSenderId: "604738853913",
+    appId: "1:604738853913:web:1a5162ace231e8bf0e1e88",
+    measurementId: "G-NYLZ7YLB2Y"
+  };
 
-  function showSignUp(){
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.showSignUp = function(){
     document.getElementById("login-form").style.display="none";
     document.getElementById("signup-form").style.display="block";
   }
 
-  function showLogin(){
+  window.showLogin = function(){
     document.getElementById("signup-form").style.display="none";
     document.getElementById("login-form").style.display="block";
   }
 
-  /* Login */
-  async function login() {
-    const email = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-
-    if (!email || !password) {
-      alert("Please enter email and password!");
-      return;
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      alert("Login failed: " + error.message);
-      return;
-    }
-
-    alert("Login Successful!");
-    document.getElementById("login-form").style.opacity = 0;
-    setTimeout(()=>document.getElementById("login-form").style.display="none", 1000);
-    document.getElementById("dashboard-frame").style.display = "block";
-  }
-
-  /* Sign Up */
-  async function signUp() {
+  window.signUp = function() {
     const email = document.getElementById("signup-email").value.trim();
     const pass = document.getElementById("signup-password").value;
     const confirm = document.getElementById("signup-confirm").value;
 
-    if (!email || !pass || !confirm) {
-      alert("Please fill all fields!");
-      return;
-    }
     if (pass !== confirm) {
       alert("Passwords do not match!");
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({ email, password: pass });
+    createUserWithEmailAndPassword(auth, email, pass)
+      .then((userCredential) => {
+        alert("✅ Sign Up Successful!\nWelcome " + email);
+        // Redirect to Flask/Gradio app
+        window.location.href = "http://127.0.0.1:7860";
+      })
+      .catch((error) => {
+        alert("❌ " + error.message);
+      });
+  }
 
-    if (error) {
-      alert("Sign Up failed: " + error.message);
-      return;
-    }
+  window.login = function() {
+    const email = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
 
-    alert("Sign Up Successful! Check your email to confirm your account.");
-    document.getElementById("signup-form").style.opacity = 0;
-    setTimeout(() => document.getElementById("signup-form").style.display = "none", 1000);
-    document.getElementById("dashboard-frame").style.display = "block";
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        alert("✅ Login Successful!");
+        // Redirect to Flask/Gradio app
+        window.location.href = "http://127.0.0.1:7860";
+      })
+      .catch((error) => {
+        alert("❌ " + error.message);
+      });
   }
 </script>
 </body>
