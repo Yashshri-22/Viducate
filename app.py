@@ -1,22 +1,15 @@
+import os
 import gradio as gr  
 import re  
 from youtube_transcript_api import YouTubeTranscriptApi
-from langchain.text_splitter import RecursiveCharacterTextSplitter  
-from langchain_community.vectorstores import FAISS 
-from langchain.chains import LLMChain 
-from langchain.prompts import PromptTemplate  
-import openai
-import os
+import google.generativeai as genai
+
+genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
 
 def get_video_id(url):
     pattern = r'https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})'
     match = re.search(pattern, url)
     return match.group(1) if match else None
-
-# url = ""
-# video_id = get_video_id(url)
-# print(video_id)
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def get_transcript(url):
     ytt_api = YouTubeTranscriptApi()
@@ -28,21 +21,32 @@ def get_transcript(url):
 transcript_generated = get_transcript("url")
 print(transcript_generated)
 
+def summarize_transcript(transcript_text):
+    """
+    Uses Google Gemini model to summarize the full transcript into a short summary.
+    Fully free, replaces OpenAI GPT model.
+    """
+    model = genai.GenerativeModel("gemini-1.5-flash") 
+    response = model.generate_content(
+        f"Summarize this transcript in a few paragraphs:\n\n{transcript_text}"
+    )
+    return response.text.strip()
 
-# # Gradio UI
-# with gr.Blocks() as demo:
-#     gr.Markdown("# AI-Powered YouTube Summarizer & Q&A Tool")
-#     url_in = gr.Textbox(label="YouTube Video URL")
-#     summary_out = gr.Textbox(label="Video Summary")
-#     question_in = gr.Textbox(label="Ask a question about the video")
-#     answer_out = gr.Textbox(label="Answer")
-#     state = gr.State()
-#     gr.Button("Summarize Video").click(
-#         summarize_video, inputs=url_in, outputs=summary_out
-#     )
-#     gr.Button("Ask Question").click(
-#         answer_question, inputs=[url_in, question_in, state], outputs=[answer_out, state]
-#     )
+def quiz(transcript_text):
+    """
+    Uses Google Gemini model to create a quiz based on the transcript.
+    Fully free, replaces OpenAI GPT model.
+    """
+    model = genai.GenerativeModel("gemini-1.5-flash") 
+    response = model.generate_content(
+        f"Create a quiz based on the following transcript:\n\n{transcript_text}"
+    )
+    return response.text.strip()
 
-# demo.launch()
+summary_text = summarize_transcript(transcript_generated)
+print("\n----- VIDEO SUMMARY -----\n")
+print(summary_text)
 
+quiz_text = quiz(transcript_generated)
+print("\n----- VIDEO QUIZ -----\n")
+print(quiz_text)
