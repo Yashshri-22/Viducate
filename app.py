@@ -6,8 +6,10 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import google.generativeai as genai
 
 
-genai.configure(api_key="AIzaSyCIRnRut4UXNJBsNEV3awhD7vg9Ff6BXKk")
-
+api_key = os.environ.get("GOOGLE_API_KEY")
+if not api_key:
+    raise ValueError("Google API key not found in environment variables!")
+genai.configure(api_key=api_key)
 
 def get_video_id(url):
     pattern = r'https:\/\/www\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})'
@@ -155,7 +157,7 @@ with gr.Blocks(css="""
 
     # Navbar
     with gr.Row(elem_classes="navbar"):
-        gr.Markdown("<div class='logo'>VidQuiz</div>")
+        gr.Markdown("<div class='logo'>Viducate</div>")
         gr.Markdown("<ul><li><a href='#'>Home</a></li><li><a href='#'>About</a></li><li><a href='#'>Contact</a></li></ul>")
     
     # Hero section
