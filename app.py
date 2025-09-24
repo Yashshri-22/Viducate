@@ -40,19 +40,19 @@ def generate_quiz(url):
     transcript_text = get_transcript(url)
     model = genai.GenerativeModel("gemini-1.5-flash")
     response = model.generate_content(
-        """Respond ONLY with one valid JSON object, no explanations, matching this format:
+        """Respond ONLY with a valid JSON object in this format:
         {
           "quiz": [
-            {"question": "...", "options": ["A","B","C","D"], "answer": "B"},
+            {"question": "...", "options": ["option1","option2","option3","option4"], "answer": "full text of the correct option"},
             ...
           ]
         }
+        Important: **The 'answer' field must be exactly one of the 'options' strings, not letters.**
         Transcript:
         """ + transcript_text
     )
     quiz_json = response.text.strip()
-    print("Model raw response:", quiz_json)  # For debugging
-
+    print("Model raw response:", quiz_json)  # Debug
     try:
         quiz_data = json.loads(quiz_json)
     except:
@@ -67,18 +67,18 @@ def generate_quiz(url):
             ]}
     return quiz_data
 
-
 def check_answers(user_answers, quiz_data):
     score = 0
     feedback = []
     for i, (ua, q) in enumerate(zip(user_answers, quiz_data["quiz"])):
         correct = q["answer"]
-        if ua == correct:
+        # Compare selected text with the correct text (case-insensitive, strip whitespace)
+        if ua.strip().lower() == correct.strip().lower():
             score += 1
-            feedback.append(f"Q{i+1}:  Correct")
+            feedback.append(f"Q{i+1}: Correct")
         else:
-            feedback.append(f"Q{i+1}:  Wrong (Correct: {correct})")
-    return f"Your Score: {score}/5\n\n" + "\n".join(feedback)
+            feedback.append(f"Q{i+1}: Wrong (Correct: {correct})")
+    return f"Your Score: {score}/{len(quiz_data['quiz'])}\n\n" + "\n".join(feedback)
 
 
 with gr.Blocks(css="""
