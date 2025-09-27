@@ -36,7 +36,7 @@
     top: 50%;
     transform: translateY(-50%);
     background: rgba(0,0,0,0.85);
-    padding: 40px 50px;
+    padding: 40px 40px;
     border-radius: 15px;
     box-shadow: 0 0 30px #00ffff88, 0 0 60px #00ffff33;
     text-align: center;
@@ -44,6 +44,7 @@
     transition: all 0.4s ease, opacity 1s ease;
     z-index: 10;
     opacity: 1;
+
   }
 
   .form-container:hover {
@@ -68,6 +69,7 @@
   }
 
   .input-group input {
+    box-sizing: border-box;
     width: 100%;
     padding: 12px 15px;
     background: #1c1f2a;
@@ -222,7 +224,7 @@
 
     createUserWithEmailAndPassword(auth, email, pass)
       .then((userCredential) => {
-        alert("✅ Sign Up Successful!\nWelcome " + email);
+        alert("Sign Up Successful!\nWelcome " + email);
         // Redirect to Flask/Gradio app
         window.location.href = "http://127.0.0.1:7860";
       })
@@ -237,7 +239,7 @@
 
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        alert("✅ Login Successful!");
+        alert("Login Successful!");
         // Redirect to Flask/Gradio app
         window.location.href = "http://127.0.0.1:7860";
       })
